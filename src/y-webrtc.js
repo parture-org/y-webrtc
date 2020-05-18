@@ -536,6 +536,7 @@ export class WebrtcProvider extends Observable {
    * @param {awarenessProtocol.Awareness} [opts.awareness]
    * @param {number} [opts.maxConns]
    * @param {boolean} [opts.filterBcConns]
+   * @param {any} [opts.signalingConnectionClass]
    * @param {any} [opts.peerOpts]
    */
   constructor (
@@ -547,6 +548,7 @@ export class WebrtcProvider extends Observable {
       awareness = new awarenessProtocol.Awareness(doc),
       maxConns = 20 + math.floor(random.rand() * 15), // the random factor reduces the chance that n clients form a cluster
       filterBcConns = true,
+      signalingConnectionClass = SignalingConn,
       peerOpts = {} // simple-peer options. See https://github.com/feross/simple-peer#peer--new-peeropts
     } = {}
   ) {
@@ -561,6 +563,7 @@ export class WebrtcProvider extends Observable {
     this.shouldConnect = false
     this.signalingUrls = signaling
     this.signalingConns = []
+    this.signalingConnClass = signalingConnectionClass
     this.maxConns = maxConns
     this.peerOpts = peerOpts
     /**
@@ -592,7 +595,8 @@ export class WebrtcProvider extends Observable {
   connect () {
     this.shouldConnect = true
     this.signalingUrls.forEach(url => {
-      const signalingConn = map.setIfUndefined(signalingConns, url, () => new SignalingConn(url))
+      var ClassRef = this.signalingConnClass
+      const signalingConn = map.setIfUndefined(signalingConns, url, () => new ClassRef(url))
       this.signalingConns.push(signalingConn)
       signalingConn.providers.add(this)
     })
